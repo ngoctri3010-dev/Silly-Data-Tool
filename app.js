@@ -15,7 +15,7 @@ const els = {
   folderInput: document.getElementById("folderInput"),
   packageRootInput: document.getElementById("packageRootInput"),
   dataRootInput: document.getElementById("dataRootInput"),
-  typeInput: document.getElementById("typeInput"),
+
   categoryTargetInput: document.getElementById("categoryTargetInput"),
   iconRootInput: document.getElementById("iconRootInput"),
   versionInput: document.getElementById("versionInput"),
@@ -191,6 +191,7 @@ function analyzeItems(items) {
         filePrefix: "",
         rootCandidates: new Map(),
         prefixCandidates: new Map(),
+        typeCandidates: new Map(),
       });
     }
     const stat = byCategory.get(category);
@@ -215,6 +216,8 @@ function analyzeItems(items) {
           stat.prefixCandidates.set(parsed.prefix, (stat.prefixCandidates.get(parsed.prefix) || 0) + 1);
         }
       }
+    if (item.type) {
+      stat.typeCandidates.set(item.type, (stat.typeCandidates.get(item.type) || 0) + 1);
     }
   }
 
@@ -226,6 +229,7 @@ function analyzeItems(items) {
     if (!stat.filePrefix && stat.prefixCandidates.size) {
       stat.filePrefix = mostCommon(stat.prefixCandidates);
     }
+    stat.commonType = mostCommon(stat.typeCandidates);
     stat.nextFileIndex = stat.maxFileIndex + 1;
   }
 
@@ -403,7 +407,20 @@ function rebuildPlan() {
       const backgroundExt = asset.kind === "video" ? asset.background.ext : "png";
       const backgroundPath = joinPath(categoryRoot, "background", `${filePrefix}${index}.${backgroundExt}`);
       const thumbnailPath = joinPath(categoryRoot, "thumbnails", `${filePrefix}${index}.webp`);
-      const itemType = settings.itemType || (asset.kind === "video" ? "live wallpaper" : "wallpaper 4k");
+      let itemType = "";
+      const stat = findCategoryStat(group.category);
+      if (stat && stat.commonType) {
+        itemType = stat.commonType;
+      } else {
+        const fullPath = asset.background.relativePath.toLowerCase();
+        if (fullPath.includes("silly smile") || fullPath.includes("emoji")) {
+          itemType = "silly smile";
+        } else if (fullPath.includes("live wallpaper") || asset.kind === "video") {
+          itemType = "live wallpaper";
+        } else {
+          itemType = "wallpaper 4k";
+        }
+      }
 
       plan.push({
         id: nextId,
@@ -506,7 +523,6 @@ function readSettings() {
   return {
     packageRoot: normalizeSlashes(els.packageRootInput.value.trim()),
     dataRoot: normalizeSlashes(els.dataRootInput.value.trim()),
-    itemType: els.typeInput.value.trim(),
     categoryTarget: els.categoryTargetInput.value,
     iconRoot: normalizeSlashes(els.iconRootInput.value.trim()) || "ic_category",
     incrementVersion: els.versionInput.checked,
