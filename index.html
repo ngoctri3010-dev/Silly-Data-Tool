@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Silly Data Builder</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Remote Config Tool</p>
+          <h1>Silly Data Builder</h1>
+        </div>
+        <div id="healthPill" class="health-pill">Chưa import JSON</div>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <section class="tool-section">
+            <h2>Nguồn dữ liệu</h2>
+            <label class="file-picker">
+              <span>Import remote config JSON</span>
+              <input id="jsonInput" type="file" accept=".json,application/json" />
+            </label>
+            <button id="folderButton" class="secondary-button" type="button">
+              Import folder data theo category
+            </button>
+            <input id="folderInput" class="hidden-input" type="file" multiple webkitdirectory />
+          </section>
+
+          <section class="tool-section">
+            <h2>Cài đặt tạo mới</h2>
+            <label class="field">
+              <span>Folder ngoài khi xuất ZIP</span>
+              <input id="packageRootInput" type="text" value="sillysmiles2025" placeholder="sillysmiles2025" />
+            </label>
+            <label class="field">
+              <span>Prefix path trong JSON</span>
+              <input id="dataRootInput" type="text" value="" placeholder="Để trống để path giống JSON hiện tại" />
+            </label>
+            <label class="field">
+              <span>Type cho item mới</span>
+              <select id="typeInput">
+                <option value="silly smile">silly smile</option>
+                <option value="live wallpaper">live wallpaper</option>
+                <option value="wallpaper 4k">wallpaper 4k</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Category list cần update</span>
+              <select id="categoryTargetInput">
+                <option value="auto">Auto theo media</option>
+                <option value="live">live_wallpaper_categories_json</option>
+                <option value="4k">wallpaper_4k_categories_json</option>
+                <option value="none">Không update category list</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Folder icon category</span>
+              <input id="iconRootInput" type="text" value="ic_category" />
+            </label>
+            <label class="check-row">
+              <input id="versionInput" type="checkbox" checked />
+              <span>Tăng wallpaper_config_version thêm 1</span>
+            </label>
+          </section>
+
+          <section class="tool-section">
+            <h2>Index check</h2>
+            <div id="indexSummary" class="index-summary">
+              Import JSON để xem max id và index từng category.
+            </div>
+          </section>
+        </aside>
+
+        <section class="content">
+          <section class="stats-grid" id="statsGrid">
+            <div class="metric">
+              <span>Items</span>
+              <strong>0</strong>
+            </div>
+            <div class="metric">
+              <span>Max ID</span>
+              <strong>-</strong>
+            </div>
+            <div class="metric">
+              <span>Category</span>
+              <strong>0</strong>
+            </div>
+            <div class="metric">
+              <span>New plan</span>
+              <strong>0</strong>
+            </div>
+          </section>
+
+          <nav class="tabs" aria-label="Views">
+            <button class="tab-button active" type="button" data-tab="overview">Overview</button>
+            <button class="tab-button" type="button" data-tab="plan">Plan tạo mới</button>
+            <button class="tab-button" type="button" data-tab="items">All items</button>
+            <button class="tab-button" type="button" data-tab="logs">Log</button>
+          </nav>
+
+          <section id="overviewPanel" class="tab-panel active">
+            <div class="panel-header">
+              <h2>Overview category</h2>
+              <span id="jsonNameLabel">Chưa có JSON</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Items</th>
+                    <th>Max item id</th>
+                    <th>Max file index</th>
+                    <th>Folder hiện tại</th>
+                    <th>Prefix file</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="planPanel" class="tab-panel">
+            <div class="panel-header">
+              <h2>Plan tạo mới</h2>
+              <span id="folderNameLabel">Chưa import folder</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Index</th>
+                    <th>Media</th>
+                    <th>Thumbnail</th>
+                  <th>Path JSON / ZIP</th>
+                  </tr>
+                </thead>
+                <tbody id="planBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="itemsPanel" class="tab-panel">
+            <div class="panel-header">
+              <h2>All items</h2>
+              <input id="itemSearchInput" class="search-input" type="search" placeholder="Lọc category/path/id" />
+            </div>
+            <div class="table-wrap all-items-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Thumbnail</th>
+                    <th>Path</th>
+                  </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="logsPanel" class="tab-panel">
+            <div class="panel-header">
+              <h2>Log xử lý</h2>
+              <span id="logCountLabel">0 log</span>
+            </div>
+            <div id="logList" class="log-list"></div>
+          </section>
+        </section>
+      </section>
+
+      <footer class="action-bar">
+        <div>
+          <strong id="generateTitle">Sẵn sàng khi đã import JSON</strong>
+          <p id="generateSubtitle">ZIP sẽ giữ folder đúng theo path file, ví dụ sillysmiles2025/emoji/...</p>
+        </div>
+        <div class="action-buttons">
+          <button id="newDataButton" class="secondary-action-button" type="button" disabled>Gen new data</button>
+          <button id="generateButton" class="primary-button" type="button" disabled>Generate all json</button>
+        </div>
+      </footer>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
